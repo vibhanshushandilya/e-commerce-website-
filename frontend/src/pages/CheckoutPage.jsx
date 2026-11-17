@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 
 export default function CheckoutPage() {
   const { cart, fetchCart } = useCart();

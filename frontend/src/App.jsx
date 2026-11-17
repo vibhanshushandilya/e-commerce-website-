@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import OrdersPage from './pages/OrdersPage';
 import WishlistPage from './pages/WishlistPage';
+import ProfilePage from './pages/ProfilePage';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ function App() {
         <Route path="/checkout"      element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
         <Route path="/orders"        element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
         <Route path="/orders/:id"    element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
+        <Route path="/profile"       element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
         <Route path="/wishlist"      element={<PrivateRoute><WishlistPage /></PrivateRoute>} />
         <Route path="*"              element={<Navigate to="/" replace />} />
       </Routes>

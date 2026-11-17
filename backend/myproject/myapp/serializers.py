@@ -83,10 +83,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
                   'phone', 'address', 'city', 'state', 'pincode', 'country', 'is_prime']
 
     def update(self, instance, validated_data):
-        user_data = validated_data.pop('user', {})
-        for attr, value in user_data.items():
-            setattr(instance.user, attr, value)
-        instance.user.save()
+        user = instance.user
+        first_name = validated_data.pop('first_name', user.first_name)
+        last_name = validated_data.pop('last_name', user.last_name)
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()

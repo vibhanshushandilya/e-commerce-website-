@@ -1,19 +1,19 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
-
-const CartContext = createContext(null);
+import { CartContext } from './cart-context';
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState({ items: [], total: 0, count: 0 });
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     try {
       const { data } = await api.get('cart/');
       setCart(data);
     } catch {}
-  };
+  }, []);
 
-  useEffect(() => { fetchCart(); }, []);
+  // eslint-disable-next-line react(set-state-in-effect)
+  useEffect(() => { fetchCart(); }, [fetchCart]);
 
   const addToCart = async (product_id, quantity = 1) => {
     await api.post('cart/', { action: 'add', product_id, quantity });
@@ -41,5 +41,3 @@ export function CartProvider({ children }) {
     </CartContext.Provider>
   );
 }
-
-export const useCart = () => useContext(CartContext);

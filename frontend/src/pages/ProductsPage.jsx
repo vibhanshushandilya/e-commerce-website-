@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
@@ -8,7 +8,8 @@ export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ count: 0, next: null, previous: null });
-  const [filters, setFilters] = useState({
+
+  const filters = useMemo(() => ({
     search: searchParams.get('search') || '',
     category: searchParams.get('category') || '',
     min_price: searchParams.get('min_price') || '',
@@ -17,40 +18,34 @@ export default function ProductsPage() {
     is_prime: searchParams.get('is_prime') || '',
     is_featured: searchParams.get('is_featured') || '',
     is_bestseller: searchParams.get('is_bestseller') || '',
-  });
+  }), [searchParams]);
 
-  const fetchProducts = useCallback(async (params = filters) => {
+  const fetchProducts = useCallback(async (params) => {
     setLoading(true);
     try {
-      const query = Object.entries(params)
-        .filter(([, v]) => v !== '')
-        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
-        .join('&');
-      const { data } = await api.get(`products/?${query}`);
+      const query = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== '') query.set(key, String(value));
+      });
+
+      const { data } = await api.get(`products/?${query.toString()}`);
       setProducts(data.results || data);
-      setPagination({ count: data.count, next: data.next, previous: data.previous });
-    } catch {}
-    setLoading(false);
+      setPagination({ count: data.count ?? (data.results?.length ?? data.length ?? 0), next: data.next ?? null, previous: data.previous ?? null });
+    } catch {
+      setProducts([]);
+      setPagination({ count: 0, next: null, previous: null });
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  // eslint-disable-next-line react(set-state-in-effect)
   useEffect(() => {
-    const params = {
-      search: searchParams.get('search') || '',
-      category: searchParams.get('category') || '',
-      min_price: searchParams.get('min_price') || '',
-      max_price: searchParams.get('max_price') || '',
-      ordering: searchParams.get('ordering') || '-created_at',
-      is_prime: searchParams.get('is_prime') || '',
-      is_featured: searchParams.get('is_featured') || '',
-      is_bestseller: searchParams.get('is_bestseller') || '',
-    };
-    setFilters(params);
-    fetchProducts(params);
-  }, [searchParams]);
+    fetchProducts(filters);
+  }, [fetchProducts, filters]);
 
   const updateFilter = (key, value) => {
     const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
     const sp = new URLSearchParams();
     Object.entries(newFilters).forEach(([k, v]) => { if (v) sp.set(k, v); });
     setSearchParams(sp);

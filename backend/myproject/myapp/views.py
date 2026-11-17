@@ -204,7 +204,8 @@ class CartView(APIView):
                 })
             except Product.DoesNotExist:
                 pass
-        return Response({'items': items, 'total': round(total, 2), 'count': len(items)})
+        item_count = sum(item['quantity'] for item in items)
+        return Response({'items': items, 'total': round(total, 2), 'count': item_count})
 
     def post(self, request):
         action = request.data.get('action')
@@ -225,7 +226,7 @@ class CartView(APIView):
             cart = {}
 
         save_cart(request, cart)
-        return Response({'detail': 'Cart updated.', 'count': len(cart)})
+        return Response({'detail': 'Cart updated.', 'count': sum(cart.values())})
 
 
 # ---------------------------------------------------------------------------
